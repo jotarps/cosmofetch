@@ -1,95 +1,118 @@
 # cosmofetch
 
-Meu clone do fastfetch, feito em C puro. Mostra as informações do sistema do lado de um logo desenhado direto no terminal. Não tem dependência nenhuma além da libc.
+Ferramenta de linha de comando que exibe informações do sistema ao lado de um logo, no estilo do fastfetch. Escrita em C, sem dependências além da libc.
 
-Fiz por diversão e pra aprender, então não é uma cópia perfeita do original. Mas já tem bastante coisa: 65 módulos, temas, logos que se adaptam ao tamanho do terminal, saída em JSON e até imagem de verdade em alguns terminais.
+## Recursos
 
-## Instalando
+- 65 módulos (sistema, hardware, ambiente gráfico e rede)
+- Logos gerados em tempo de execução, que se ajustam à largura do terminal
+- Temas de cores e personalização de cada elemento
+- Arquivo de configuração e módulos customizados
+- Saída em JSON
+- Imagem no lugar do logo (kitty, WezTerm, Ghostty ou via `chafa`)
 
-Precisa só de `gcc` (ou `clang`) e `make`:
+## Compilação
+
+São necessários um compilador C (`gcc` ou `clang`) e o `make`.
 
 ```sh
-sudo apt install build-essential   # se ainda não tiver
 git clone https://github.com/jotarps/cosmofetch
 cd cosmofetch
 make
 ./cosmofetch
 ```
 
-Se quiser rodar de qualquer lugar, `sudo make install`.
-
-## Como usar
+Para instalar no sistema:
 
 ```sh
-./cosmofetch                                # do jeito padrão
-./cosmofetch --logo galaxy --theme neon     # outro logo e outras cores
-./cosmofetch --bars                         # barrinhas de memória, disco e bateria
-./cosmofetch --structure title:os:cpu:memory   # só o que você quer ver
-./cosmofetch --json                         # saída em JSON
-./cosmofetch --list-modules                 # lista todos os módulos
-./cosmofetch --help                         # todas as opções
+sudo make install
 ```
 
-## Trocando as cores
+No Debian e no Ubuntu, `sudo apt install build-essential` instala tudo o que é preciso.
 
-O jeito mais rápido é um tema pronto: `cosmo` (o padrão), `ocean`, `sunset`, `forest`, `mono` e `neon`.
+## Uso
+
+```
+cosmofetch [opções]
+```
+
+Exemplos:
 
 ```sh
-./cosmofetch --theme sunset
+cosmofetch --logo galaxy --theme neon
+cosmofetch --bars
+cosmofetch --structure title:os:cpu:memory
+cosmofetch --json
 ```
 
-Dá pra mexer nas cores uma por uma também. Aceita número de 0 a 255 ou nome (`red`, `pink`, `orange`, `aqua`...):
+Opções mais usadas:
+
+| Opção | Descrição |
+|---|---|
+| `--structure LISTA` | Módulos a exibir, separados por `:` |
+| `--theme NOME` | `cosmo`, `ocean`, `sunset`, `forest`, `mono` ou `neon` |
+| `--logo NOME` | `planet`, `galaxy`, `rocket`, `mountains`, `terminal`, `random` ou `none` |
+| `--logo-file ARQ` | Usa um arquivo de texto como logo |
+| `--logo-position POS` | `left`, `right`, `top` ou `none` |
+| `--image ARQ` | Exibe uma imagem PNG no lugar do logo |
+| `--bars` | Mostra barras de porcentagem |
+| `--json` | Saída em JSON |
+| `--list-modules` | Lista todos os módulos |
+
+A lista completa está em `cosmofetch --help`.
+
+## Cores
+
+As cores dos rótulos, do usuário e do logo podem ser alteradas por opção. Os valores aceitos são números de 0 a 255 ou nomes como `red`, `orange`, `pink` e `aqua`.
 
 ```sh
-./cosmofetch --key-color orange --user-color 196
-./cosmofetch --logo-color 196,202,208,214,220
+cosmofetch --key-color orange --user-color 196
+cosmofetch --logo-color 196,202,208,214,220
 ```
 
-## Arquivo de configuração
+## Configuração
 
-Pra não ficar digitando as opções toda vez:
+O programa lê `~/.config/cosmofetch/config.conf`. Para gerar um arquivo de exemplo:
 
 ```sh
 mkdir -p ~/.config/cosmofetch
-./cosmofetch --gen-config > ~/.config/cosmofetch/config.conf
+cosmofetch --gen-config > ~/.config/cosmofetch/config.conf
 ```
 
-Tudo que existe na linha de comando existe no arquivo também, no formato `chave = valor`. O arquivo gerado já vem comentado.
+O formato é `chave = valor`, e cada opção da linha de comando tem uma chave equivalente.
 
-Você também pode criar seus próprios módulos com qualquer comando do terminal:
+Módulos customizados executam um comando e exibem a primeira linha da saída:
 
 ```ini
 custom1 = IP público | curl -s --max-time 3 https://api.ipify.org
 structure = title:separator:os:cpu:custom1:memory
 ```
 
-## Os logos
+## Logos e imagens
 
-O `planet` e o `galaxy` não são arte pronta: são calculados na hora, com sombreamento e tudo, e encolhem sozinhos se o terminal for estreito. Também tem `rocket`, `mountains` e `terminal`, que são desenhos fixos.
+Os logos `planet` e `galaxy` são calculados na hora e redimensionados conforme o terminal. Os demais são arte fixa. Qualquer arquivo de texto pode ser usado com `--logo-file`, inclusive com sequências de cor ANSI.
 
-Quer usar o seu? `--logo-file arquivo.txt` aceita qualquer arte em texto (com cores ANSI inclusive).
+Para exibir uma imagem, o terminal precisa suportar o protocolo gráfico do kitty (kitty, WezTerm, Ghostty) e o arquivo precisa ser PNG. Nos demais terminais, a imagem é convertida por `chafa`, se estiver instalado.
 
-Se o seu terminal for o kitty, WezTerm ou Ghostty, dá pra mostrar uma imagem PNG de verdade no lugar do logo:
+## Módulos
 
-```sh
-./cosmofetch --image ~/foto.png
-```
+| Grupo | Módulos |
+|---|---|
+| Sistema | os, host, board, bios, chassis, kernel, uptime, boottime, loadavg, date, time, datetime, timezone, processes, users, initsystem, bootmode, libc, virt, locale, lang, packages |
+| Hardware | cpu, cpuusage, cpucache, gpu, memory, swap, disk, physicaldisk, battery, poweradapter, temperature, fans, brightness, sound, bluetooth, display |
+| Ambiente | shell, editor, terminal, de, wm, theme, icons, font, cursor |
+| Rede | localip, localip6, mac, gateway, dns, wifi, netio, publicip, weather, media |
+| Customizados | custom1 a custom9 |
 
-Em outros terminais isso funciona se você tiver o `chafa` instalado, que converte a imagem em blocos coloridos.
-
-## O que ele mostra
-
-Tem módulo pra quase tudo: sistema (os, kernel, uptime, pacotes, BIOS, placa-mãe...), hardware (cpu, gpu, memória, discos, bateria, temperatura, monitores...), ambiente (shell, terminal, DE, WM, tema GTK, fonte...) e rede (IP, MAC, gateway, DNS, Wi-Fi...). Rode `./cosmofetch --list-modules` pra ver a lista completa com a descrição de cada um.
-
-Dois módulos fazem requisição na internet (`publicip` e `weather`), então não vêm ligados por padrão.
+Os módulos `publicip` e `weather` acessam a internet e por isso não fazem parte da configuração padrão.
 
 ## Testes
 
 ```sh
-make test    # roda cada módulo, cada logo, cada tema e confere o JSON
-make debug   # compila com AddressSanitizer e UBSan, bom pra caçar bug
+make test     # executa cada módulo, logo e tema, e valida o JSON
+make debug    # compila com AddressSanitizer e UBSan
 ```
 
 ## Licença
 
-MIT. Pode usar, copiar e mexer à vontade.
+MIT. Veja o arquivo `LICENSE`.
