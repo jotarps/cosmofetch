@@ -14,7 +14,7 @@ módulos customizados e suporte a **imagem de verdade** no terminal.
 ## Instalar
 
 ```sh
-git clone https://github.com/SEU_USUARIO/cosmofetch
+git clone https://github.com/jotarps/cosmofetch
 cd cosmofetch
 make
 ./cosmofetch
