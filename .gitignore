@@ -1,0 +1,4 @@
+build/
+cosmofetch
+*.o
+*.d
